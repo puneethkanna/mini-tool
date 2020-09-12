@@ -48,38 +48,35 @@ class miniTool(tk.Tk):
 
 # first window frame startpage 
    
-class StartPage(tk.Frame): 
-    def __init__(self, parent, controller):  
-        tk.Frame.__init__(self, parent) 
-          
+class StartPage(tk.Frame):
+	def __init__(self, parent, controller):
+		tk.Frame.__init__(self, parent)
+
         # label of frame Layout 2 
-        label = ttk.Label(self, text ="Startpage", font = LARGEFONT) 
-          
+		label = ttk.Label(self, text ="Startpage", font = LARGEFONT)
+
         # putting the grid in its place by using 
         # grid 
-        label.grid(row = 0, column = 4, padx = 10, pady = 10)  
+		label.grid(row = 0, column = 4, padx = 10, pady = 10)
    
-        button1 = ttk.Button(self, text ="Password Generator", 
-        command = lambda : controller.show_frame(PasswordGenerator)) 
-      
+		button1 = ttk.Button(self, text ="Password Generator", command = lambda : controller.show_frame(PasswordGenerator)) 
+
         # putting the button in its place by 
         # using grid 
-        button1.grid(row = 1, column = 1, padx = 10, pady = 10) 
+		button1.grid(row = 1, column = 1, padx = 10, pady = 10)
    
         ## button to show frame 2 with text layout2 
-        button2 = ttk.Button(self, text ="Password Manager", 
-        command = lambda : controller.show_frame(PasswordManager)) 
+		button2 = ttk.Button(self, text ="Password Manager", command = lambda : controller.show_frame(PasswordManager)) 
       
         # putting the button in its place by 
         # using grid 
-        button2.grid(row = 2, column = 1, padx = 10, pady = 10) 
-		
-		button3 = ttk.Button(self, text ="File Transfer", 
-        command = lambda : controller.show_frame(FileTransfer)) 
+		button2.grid(row = 2, column = 1, padx = 10, pady = 10) 
+
+		button3 = ttk.Button(self, text ="File Transfer", command = lambda : controller.show_frame(FileTransfer))
       
         # putting the button in its place by 
         # using grid 
-        button3.grid(row = 2, column = 1, padx = 10, pady = 10) 
+		button3.grid(row = 2, column = 1, padx = 10, pady = 10) 
 
 
 # second window frame page1  
