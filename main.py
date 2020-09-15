@@ -7,6 +7,12 @@ from tkinter import Listbox
 from tkinter import Text
 import random
 from tkinter import ttk
+from tkinter.filedialog import askopenfile
+from tkinter import filedialog
+import os
+import subprocess
+import ftp as ftp
+import threading
 
 LARGEFONT =("Verdana", 35)
 #root = Tk()
@@ -154,32 +160,46 @@ class PasswordManager(tk.Frame):
 
 class FileTransfer(tk.Frame): 
 	def __init__(self, parent, controller):
-		def pwd_generator():
-			password = (ge.pwd_generator(name.get(),mail.get()))
-			for p in range(len(password)):
-				text_box.insert(END, password[p]+'\n')
-
 		tk.Frame.__init__(self, parent) 
-		label = ttk.Label(self, text ="Password Generator", font = LARGEFONT) 
+		label = ttk.Label(self, text ="File Transfer", font = LARGEFONT) 
 		label.grid(row = 0, column = 4, padx = 10, pady = 10) 
-   
+
         # button to show frame 2 with text 
         # layout2 
-		name_label = ttk.Label(self, text ="Name").grid(row = 2, column = 4)
-		mail_label = ttk.Label(self, text ="Mail").grid(row = 3, column = 4)
-		name = Entry(self)
-		mail = Entry(self)
-		name.grid(row=2, column=5)
-		mail.grid(row=3, column=5)
-		password_generator_ok = ttk.Button(self, text ="Generate", command = pwd_generator)
-		#password_generator_ok.place(x = 50,y = 50)
-		password_generator_ok.grid(row = 5, column = 5, padx = 10, pady = 10)
-		button1 = ttk.Button(self, text ="StartPage", command = lambda : controller.show_frame(StartPage)) 
-		#listbox = Listbox(self)
+		def open_file():
+			file = askopenfile(mode ='r', filetypes =[('All', '*.*')])
+
+			if file is not None:
+				#ttt = ftp.start_download_server(file_path=file.name, debug=1, custom_port=0, ip_addr=0, auth="puneeth:pannu123")
+				#print(file.name)
+				#cc = 'qr-filetransfer ' + file.name
+				#p = subprocess.Popen(cc, stdout=subprocess.PIPE, shell=True)
+
+				#(output, err) = p.communicate()
+				#p_status = p.wait()
+				#print("Command output : ", output)
+				#print("Command exit status/return code : ", p_status)
+				#stream = os.popen(cc)
+				#output = stream.read()
+				#print(output.strip())
+				#print(ttt)
+		def open_directory():
+			file = filedialog.askdirectory()
+			if file is not None:
+				print(file)
+				#content = file.read()
+				#print(content)
+		#print(content)
+		select_file = ttk.Button(self, text ="OpenFile", command = lambda:open_file())
+		select_file.grid(row = 5, column = 5, padx = 10, pady = 10)
+		select_directory = ttk.Button(self, text ="OpenDirectory", command = lambda:open_directory())
+		select_directory.grid(row = 5, column = 6, padx = 10, pady = 10)
+
+		button1 = ttk.Button(self, text ="StartPage", command = lambda : controller.show_frame(StartPage))
 		text_box = tk.Text(self, width = 30, height = 10)
+
 		text_box.grid(row = 6, column = 4, columnspan = 2)
-        # putting the button in its place  
-        # by using grid 
+        
 		button1.grid(row = 1, column = 1, padx = 20, pady = 10)
    
         # button to show frame 2 with text 
