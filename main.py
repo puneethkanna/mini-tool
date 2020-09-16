@@ -1,6 +1,7 @@
 from tkinter import *  
 #import password_manager as pwd_manager
 import generator as ge
+import manager as mg
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import Listbox
@@ -20,13 +21,13 @@ LARGEFONT =("Verdana", 35)
 class miniTool(tk.Tk): 
       
     # __init__ function for class miniTool  
-	def __init__(self, *args, **kwargs):  
+	def __init__(self, *args, **kwargs):
   
         # __init__ function for class Tk 
 		tk.Tk.__init__(self, *args, **kwargs) 
 
         # creating a container 
-		container = tk.Frame(self)   
+		container = tk.Frame(self)
 		container.pack(side = "top", fill = "both", expand = True)
 		container.grid_rowconfigure(0, weight = 1)
 		container.grid_columnconfigure(0, weight = 1)
@@ -43,7 +44,7 @@ class miniTool(tk.Tk):
 			# for loop 
 			self.frames[F] = frame
 			frame.grid(row = 0, column = 0, sticky ="nsew")
-		self.show_frame(FileTransfer)
+		self.show_frame(PasswordManager)
 		self.geometry("900x600")
 		self.resizable(width=False, height=False)
     # to display the current frame passed as 
@@ -129,33 +130,58 @@ class PasswordGenerator(tk.Frame):
 # third window frame PasswordManager 
 class PasswordManager(tk.Frame):  
 	def __init__(self, parent, controller):
+		def delete():
+			pass
+		def update():
+			temp = (mg.pwd_manager_update(username.get(),password.get()))
+			if(temp == True):
+				messagebox.showinfo("Info", "Sucessfully Updated!")
+		def insert():
+			temp = (mg.pwd_manager_insert(username.get(),password.get()))
+			if(temp == True):
+				messagebox.showinfo("Info", "Sucessfully Inserted!")
+			elif(temp == "exist"):
+				result = messagebox.askquestion("Warning", "The username already exists, do you want to udate it??", icon='warning')
+				if result == 'yes':
+					update()
+				else:
+					pass
+			elif(temp == "NULL"):
+				messagebox.showinfo("Info", "No NULL Value :(")
+			
+		def view():
+			temp = (mg.pwd_manager_display(username_view_delete.get()))
+			if temp:
+				messagebox.showinfo(temp[0][0], temp[0][1])
+			else:
+				messagebox.showinfo("Warning", "No Username Found!!")
+
 		tk.Frame.__init__(self, parent)
 		label = ttk.Label(self, text ="Password Manager", font = LARGEFONT)
 		label.grid(row = 0, column = 4, padx = 10, pady = 10)
-		website_label = ttk.Label(self, text ="Website").grid(row = 2, column = 4)
+		username_label = ttk.Label(self, text ="Username").grid(row = 2, column = 4)
 		password_label = ttk.Label(self, text ="Password").grid(row = 3, column = 4)
-		website = Entry(self)
+		username_label_view_delete = ttk.Label(self, text ="Username").grid(row = 6, column = 4)
+		username = Entry(self)
 		password = Entry(self)
-		website.grid(row=2, column=5)
+		username_view_delete = Entry(self)
+		username.grid(row=2, column=5)
 		password.grid(row=3, column=5)
-		password_generator_ok = ttk.Button(self, text ="Insert", )
-		#password_generator_ok.place(x = 50,y = 50)
+		username_view_delete.grid(row=6, column=5)
+		
+		password_generator_ok = ttk.Button(self, text ="Insert", command= insert)
 		password_generator_ok.grid(row = 5, column = 5, padx = 10, pady = 10)
-        # button to show frame 2 with text 
-        # layout2 
+
+		username_view_btn = ttk.Button(self, text ="View", command= view)
+		#username_view_btn.grid(row = 7, column = 4, padx = 0, pady = 10)
+		username_view_btn.place(x = 10, y=10)
+		username_delete_btn = ttk.Button(self, text ="Delete", command= delete)
+		username_delete_btn.grid(row = 7, column = 5, padx = 0, pady = 10)
+        
 		button1 = ttk.Button(self, text ="Password Generator", command = lambda : controller.show_frame(PasswordGenerator)) 
-      
-        # putting the button in its place by  
-        # using grid 
 		button1.grid(row = 1, column = 1, padx = 10, pady = 10)
 
-        # button to show frame 3 with text 
-        # layout3 
-		button2 = ttk.Button(self, text ="Startpage", 
-                            command = lambda : controller.show_frame(StartPage)) 
-      
-        # putting the button in its place by 
-        # using grid 
+		button2 = ttk.Button(self, text ="Startpage",  command = lambda : controller.show_frame(StartPage)) 
 		button2.grid(row = 2, column = 1, padx = 10, pady = 10)
 
 class FileTransfer(tk.Frame): 
@@ -183,13 +209,12 @@ class FileTransfer(tk.Frame):
 				#output = stream.read()
 				#print(output.strip())
 				#print(ttt)
+				print("")
 		def open_directory():
 			file = filedialog.askdirectory()
 			if file is not None:
 				print(file)
-				#content = file.read()
-				#print(content)
-		#print(content)
+
 		select_file = ttk.Button(self, text ="OpenFile", command = lambda:open_file())
 		select_file.grid(row = 5, column = 5, padx = 10, pady = 10)
 		select_directory = ttk.Button(self, text ="OpenDirectory", command = lambda:open_directory())
