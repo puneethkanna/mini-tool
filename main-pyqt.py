@@ -4,7 +4,11 @@ from PyQt5.QtCore    import *
 from PyQt5.QtWidgets import *
 import generator as ge
 import manager as mg
-
+import ftp
+import subprocess
+import threading
+import time
+#import ftp_test
 #from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QLineEdit
 #from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 #from PyQt5.QtGui import QIcon
@@ -237,19 +241,30 @@ class FileTransfer(QDialog):
 	def __init__(self, value, parent=None):
 		super().__init__(parent)
 		self.setGeometry(100, 100, 680, 550) 
-		self.setWindowTitle('Password Generator')
+		self.setWindowTitle('File Transfer')
 		widget = QWidget()
 		#listWidget = QListWidget()
-		self.formGroupBox = QGroupBox("Password Generator")
+		self.formGroupBox = QGroupBox("File Transfer")
 		self.listWidget = QListWidget()
 		self.listWidget.setSelectionBehavior(QAbstractItemView.SelectItems)
 
 		dlgLayout = QVBoxLayout()
 		self.formLayout = QFormLayout()
-        
-		self.name = QLineEdit()
-		self.mail = QLineEdit()
-		self.createForm()   
+        #def openFileNameDialog(self):
+		options = QFileDialog.Options()
+		options |= QFileDialog.DontUseNativeDialog
+		global fileName
+		fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
+		if fileName:
+			print(fileName)
+			tt = "qr-filetransfer " + fileName
+			#ftp_test.demo(fileName)
+			#self.fileName = fileName
+			threading.Thread(target=self.mini_call, daemon=True).start()
+			#time.sleep(1)
+			#output = subprocess.check_output(tt, shell=True)
+			
+			#print(ftp.mini_url)
                 
 		self.window_layout = QVBoxLayout(widget)
 		self.window_layout.addWidget(self.listWidget)
@@ -277,13 +292,12 @@ class FileTransfer(QDialog):
 		dlgLayout.addWidget(self.pushButton)
 
 		self.setLayout(dlgLayout)
-
-	def createForm(self): 
-		layout = QFormLayout() 
-		layout.addRow(QLabel("Name"), self.name)
-		layout.addRow(QLabel("Mail"), self.mail)
-		self.formGroupBox.setLayout(layout)
-
+	#@pyqtSlot()
+	def mini_call(self):
+		#output = subprocess.Popen(['qr-filetransfer', '--debug', fileName], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		ftp.start_download_server(fileName, debug=1, custom_port=0, ip_addr=0)
+		#stdout,stderr = output.communicate()
+		#print(stdout, stderr)
 	@pyqtSlot()
 	def generate(self):
 		password = (ge.pwd_generator(self.name.text(),self.mail.text()))

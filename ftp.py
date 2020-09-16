@@ -22,7 +22,9 @@ from io import BytesIO
 import qrcode
 import base64
 import time
+import threading
 
+global mini_url
 
 MacOS = "Darwin"
 Linux = "Linux"
@@ -74,11 +76,11 @@ def clean_exit():
 
     sys.exit()
 
-def FileTransferServerHandlerClass(file_name, auth, debug):
+def FileTransferServerHandlerClass(file_name, debug):
 
     class FileTransferServerHandler(http.server.SimpleHTTPRequestHandler):
         _file_name = file_name
-        _auth = auth
+        #_auth = auth
         _debug = debug
 
         def do_AUTHHEAD(self):
@@ -88,11 +90,11 @@ def FileTransferServerHandlerClass(file_name, auth, debug):
             self.end_headers()
 
         def do_GET(self):
-            if self._auth is not None:
+            '''if self._auth is not None:
                 # The authorization output will contain the prefix Basic, we should add it for comparing.
                 if self.headers.get('Authorization') != 'Basic ' + (self._auth.decode()):
                     self.do_AUTHHEAD()
-                    return
+                    return'''
 
             # the self.path will start by '/', we truncate it.
             request_path = self.path[1:]
@@ -345,8 +347,12 @@ def print_qr_code(address):
     # of print_ascii() for all operating systems
     qr.print_tty()
 
+def mini_call(file_path, debug, custom_port, ip_addr):
+    threading.Thread(target=start_download_server, args=(file_path, debug, custom_port, ip_addr)).start()
+    time.sleep(5)
+        
 
-def start_download_server(file_path, debug, custom_port, ip_addr, auth):
+def start_download_server(file_path, debug, custom_port, ip_addr):
     """
     Keyword Arguments:
     file_path        -- String indicating the path to download the file to
@@ -397,7 +403,7 @@ def start_download_server(file_path, debug, custom_port, ip_addr, auth):
     # Tweaking file_path to make a perfect url
     file_path = file_path.replace(" ", "%20")
 
-    handler = FileTransferServerHandlerClass(file_path, auth, debug)
+    handler = FileTransferServerHandlerClass(file_path, debug)
     httpd = socketserver.TCPServer(("", PORT), handler)
 
     # This is the url to be encoded into the QR code
@@ -411,8 +417,11 @@ def start_download_server(file_path, debug, custom_port, ip_addr, auth):
     # and cant bother scaning the QR code everytime when debugging
     if debug:
         print(address)
-        time.sleep(1 * 5 * 60)
-        return(address)
+        #time.sleep(1 * 5 * 60)
+        #return(address)
+        global mini_url
+        mini_url = address
+        #print(mini_url)
 
     #print_qr_code(address)
 
