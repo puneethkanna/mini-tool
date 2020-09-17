@@ -1,75 +1,90 @@
 import sqlite3
-class Pwdmanager:
-	def __init__(self,name,password):
-		self.name=name
-		self.password=password		
+conn=sqlite3.connect('manager.db')
+try:
+	cur=conn.cursor()
+	cur.execute('create table mana(website text,username text,password text)')
+except:
+	pass
 def pwd_manager_display():
+	global conn,cur
 	c=cur.execute('select * from mana')
 	x=c.fetchall()
 	if len(x)!=0:
 		for i in range(len(x)):
 			print(x[i][0],end=" ")
 		print()
-		n=input('Enter the folder for with we need to show the password: ')
+		n=input('Enter the folder for which you want to see the username and password: ')
 		for i in range(len(x)):
 			if x[i][0]==n:
-				print(x[i][1])
+				print(x[i][1],x[i][2])
 	else:
 		print("Empty")
-def pwd_manager_insert(folder):
+def pwd_manager_insert(name,username,password):
+	global conn,cur
 	with conn:
-		if folder.name!=' ':
-			cur.execute("insert into mana values('{}','{}')".format(folder.name,folder.password))
+		if name!=' ':
+			cur.execute("insert into mana values('{}','{}','{}')".format(name,username,password))
 			print('Succesfully inserted')
-def pwd_manager_update(folder):
+def pwd_manager_update(name,password):
+	global conn,cur
 	with conn:
-		if folder.name!=' ':
-			cur.execute("update mana set password=:pwd where name=:name",{'pwd':folder.password,'name':folder.name})
+		if name!=' ':
+			cur.execute("update mana set password=:pwd where website=:name",{'pwd':password,'name':name})
 		print('Succesfully updated')
 def display():
-	c=cur.execute('select name from mana')
+	global conn,cur
+	c=cur.execute('select website from mana')
 	x=c.fetchall()
 	d=[]
 	for i in range(len(x)):
 		d.append(x[i][0])
 	return d
-def pwd_manager_delete(folder):
+def pwd_manager_delete(name):
+	global conn,cur
 	with conn:
-		cur.execute('delete from mana where name=:name',{'name':folder.name})
+		cur.execute('delete from mana where website=:name',{'name':name})
 		print('Succesfully deleted')
-#if __name__=='__main__':
-n=input("view  or insert or update or delete:")
-conn=sqlite3.connect('manager.db')
-try:
-	cur=conn.cursor()
-	cur.execute('create table mana(name text,password text)')
-except:
-	pass
-if n.lower()=='view':
-	pwd_manager_display()
-elif n.lower()=='insert':
-	name=input('Enter Name Of Website: ').strip()
-	pwd=input('Enter Password: ')
-	folder=Pwdmanager(name,pwd)
-	pwd_manager_insert(folder)
-elif n.lower()=='update':
-	print('Existing websites:')
-	x=display()
-	if len(x)!=0:
-		print(*x)
-		name=input('Enter the Name of the website for which  want to update:').strip()
-		pwd=input('Enter the new password:')
-		folder=Pwdmanager(name,pwd)
-		pwd_manager_update(folder)
-	else:
-		print('No websites to update')
-elif n.lower()=='delete':
-	print('Existing website:')
-	x=display()
-	if len(x)!=0:
-		print(*x)
-		name=input('Enter the name of the website to delete:').strip()
-		folder=Pwdmanager(name,'')
-		pwd_manager_delete(folder)
-	else:
-		print('No websites to delete')	
+def pwd_manager():
+	global conn,cur
+	n=input("view  or insert or update or delete:")
+	if n.lower()=='view':
+		pwd_manager_display()
+	elif n.lower()=='insert':
+		name=input('Enter Name Of Website: ').strip()
+		x=display()
+		if name in x:
+			print("Website already Present")
+			y=input('want to update? y/n')
+			if y=='y':
+				pwd=input('Enter new password:')
+				pwd_manager_update(name,pwd)
+			else:
+				pass
+		else:
+			uname=input('Enter Username:')
+			pwd=input('Enter Password: ')
+			pwd_manager_insert(name,uname,pwd)
+	elif n.lower()=='update':
+		print('Existing websites:')
+		x=display()
+		if len(x)!=0:
+			print(*x)
+			name=input('Enter the Name of the website for which  want to update:').strip()
+			pwd=input('Enter the new password:')
+			#folder=Pwdmanager(name,pwd)
+			pwd_manager_update(name,pwd)
+		else:
+			print('No websites to update')
+	elif n.lower()=='delete':
+		print('Existing website:')
+		x=display()
+		if len(x)!=0:
+			print(*x)
+			name=input('Enter the name of the website to delete:').strip()
+			#folder=Pwdmanager(name,'')
+			pwd_manager_delete(name)
+		else:
+			print('No websites to delete')	
+if __name__=='__main__':
+	pwd_manager()
+		
