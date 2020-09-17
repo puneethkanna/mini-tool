@@ -25,11 +25,17 @@ def pwd_manager_insert(name,username,password):
 		if name!=' ':
 			cur.execute("insert into mana values('{}','{}','{}')".format(name,username,password))
 			print('Succesfully inserted')
-def pwd_manager_update(name,password):
+def pwd_manager_pupdate(name,password):
 	global conn,cur
 	with conn:
 		if name!=' ':
 			cur.execute("update mana set password=:pwd where website=:name",{'pwd':password,'name':name})
+		print('Succesfully updated')
+def pwd_manager_uupdate(name,uname):
+	global conn,cur
+	with conn:
+		if name!=' ':
+			cur.execute("update mana set username=:unme where website=:name",{'unme':uname,'name':name})
 		print('Succesfully updated')
 def display():
 	global conn,cur
@@ -56,8 +62,13 @@ def pwd_manager():
 			print("Website already Present")
 			y=input('want to update? y/n')
 			if y=='y':
-				pwd=input('Enter new password:')
-				pwd_manager_update(name,pwd)
+				z=input('want to change password or username')
+				if z.lower()=='password':
+					pwd=input('Enter new password:')
+					pwd_manager_pupdate(name,pwd)
+				elif z.lower()=='username':
+					uname=input('Enter new username:')
+					pwd_manager_uupdate(name,uname)
 			else:
 				pass
 		else:
@@ -70,9 +81,13 @@ def pwd_manager():
 		if len(x)!=0:
 			print(*x)
 			name=input('Enter the Name of the website for which  want to update:').strip()
-			pwd=input('Enter the new password:')
-			#folder=Pwdmanager(name,pwd)
-			pwd_manager_update(name,pwd)
+			z=input('want to change password or username')
+			if z.lower()=="password":
+				pwd=input('Enter the new password:')
+				pwd_manager_pupdate(name,pwd)
+			elif z.lower()=='username':
+				uname=input('Enter the new uname:')
+				pwd_manager_uupdate(name,uname)
 		else:
 			print('No websites to update')
 	elif n.lower()=='delete':
