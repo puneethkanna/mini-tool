@@ -22,9 +22,12 @@ from io import BytesIO
 import qrcode
 import base64
 import time
-import threading
 
-global mini_url
+global mini_download_url, mini_download_ssid, mini_upload_url, mini_upload_ssid
+mini_download_url = ""
+mini_download_ssid = ""
+mini_upload_url = ""
+mini_upload_ssid = ""
 
 MacOS = "Darwin"
 Linux = "Linux"
@@ -46,6 +49,7 @@ message = """
 def cursor(status):
     """
     Enable and disable the cursor in the terminal
+
     Keyword Arguments:
     status    --  Boolean value for the status of the cursor
     """
@@ -76,12 +80,26 @@ def clean_exit():
 
     sys.exit()
 
-def FileTransferServerHandlerClass(file_name, debug):
 
+def FileTransferServerHandlerClass(file_name, debug, no_force_download):
+    """Generate Handler class.
+
+    Args:
+        file_name (str): File name to serve.
+        auth: Basic auth in a base64 string or None.
+        debug (bool): True to enable debug, else False.
+        no_force_download (bool): If True, allow Content-Type to autodetect based
+            on file name extension, else force Content-Type to
+            'application/octect-stream'.
+
+    Returns:
+        FileTransferServerHandler class.
+    """
     class FileTransferServerHandler(http.server.SimpleHTTPRequestHandler):
         _file_name = file_name
         #_auth = auth
         _debug = debug
+        _no_force_download = no_force_download
 
         def do_AUTHHEAD(self):
             self.send_response(401)
@@ -106,6 +124,20 @@ def FileTransferServerHandlerClass(file_name, debug):
             else:
                 super().do_GET()
 
+        def guess_type(self, path):
+            """Add ability to force download of files.
+
+            Args:
+                path: File path to serve.
+
+            Returns:
+                Content-Type as a string.
+            """
+            if not self._no_force_download:
+                return "application/octet-stream"
+
+            super().guess_type(path)
+
         def log_message(self, format, *args):
             if self._debug:
                 super().log_message(format, *args)
@@ -113,7 +145,7 @@ def FileTransferServerHandlerClass(file_name, debug):
     return FileTransferServerHandler
 
 
-def FileUploadServerHandlerClass(output_dir, auth, debug):
+def FileUploadServerHandlerClass(output_dir, debug):
 
     class FileUploadServerHandler(http.server.BaseHTTPRequestHandler):
         absolute_path = os.path.abspath(output_dir)
@@ -122,7 +154,7 @@ def FileUploadServerHandlerClass(output_dir, auth, debug):
         home = os.path.expanduser("~")
         nice_path = absolute_path.replace(home, "~")
         _output_dir = output_dir
-        _auth = auth
+        #_auth = auth
         _debug = debug
 
         def do_AUTHHEAD(self):
@@ -132,11 +164,11 @@ def FileUploadServerHandlerClass(output_dir, auth, debug):
             self.end_headers()
 
         def do_GET(self):
-            if self._auth is not None:
+            '''if self._auth is not None:
                 # The authorization output will contain the prefix Basic, we should add it for comparing.
                 if self.headers.get('Authorization') != 'Basic ' + (self._auth.decode()):
                     self.do_AUTHHEAD()
-                    return
+                    return'''
 
             f = self.send_head()
             if f:
@@ -347,32 +379,34 @@ def print_qr_code(address):
     # of print_ascii() for all operating systems
     qr.print_tty()
 
-def mini_call(file_path, debug, custom_port, ip_addr):
-    threading.Thread(target=start_download_server, args=(file_path, debug, custom_port, ip_addr)).start()
-    time.sleep(5)
-        
 
-def start_download_server(file_path, debug, custom_port, ip_addr):
-    """
+def start_download_server(file_path, **kwargs):
+    """Start the download web server.
+
+    This function will display a QR code to the terminal that directs a user's
+    cell phone to browse to this web server.  Once connected, the web browser
+    will download the file, or display the file in the browser depending on the
+    options set.
+
+    Args:
+        file_path (str): The file path to serve.
+        **kwargs: Keyword Arguements.
+
     Keyword Arguments:
-    file_path        -- String indicating the path to download the file to
-    debug            -- Boolean indication whether to output the encoded url
-    custom_port      -- String indicating what custom port the user wants to use
-    ip_addr          -- String indicating which IP address the user wants to use
-    auth             -- String indicating base64 encoded username:password
+        debug (bool): Indication whether to output the encoded URL to the terminal.
+        custom_port (str): String indicating which custom port the user wants to use.
+        ip_addr (str): The IP address to bind web server to.
+        auth (str): Base64 encoded 'username:password'.
+        no_force_download (bool): Allow web browser to handle the file served
+            instead of forcing the browser to download it.
     """
-
-    if custom_port:
-        PORT = int(custom_port)
-    else:
-        PORT = random_port()
-
-    if ip_addr:
-        LOCAL_IP = ip_addr
-    else:
-        LOCAL_IP = get_local_ip()
-
+    '''int(kwargs["custom_port"]) if kwargs.get("custom_port") else''' 
+    '''kwargs["ip_addr"] if kwargs["ip_addr"] else'''
+    PORT = random_port()
+    LOCAL_IP =  get_local_ip()
     SSID = get_ssid()
+    #auth = kwargs.get("auth")
+    debug = kwargs.get("debug", True)
 
     if not os.path.exists(file_path):
         print("No such file or directory")
@@ -403,26 +437,30 @@ def start_download_server(file_path, debug, custom_port, ip_addr):
     # Tweaking file_path to make a perfect url
     file_path = file_path.replace(" ", "%20")
 
-    handler = FileTransferServerHandlerClass(file_path, debug)
+    handler = FileTransferServerHandlerClass(
+        file_path,
+        #kwargs.get("auth"),
+        debug,
+        kwargs.get("no_force_download", False)
+    )
     httpd = socketserver.TCPServer(("", PORT), handler)
 
     # This is the url to be encoded into the QR code
     address = "http://" + str(LOCAL_IP) + ":" + str(PORT) + "/" + file_path
 
-    #print("Scan the following QR code to start downloading.")
+    print("Scan the following QR code to start downloading.")
     if SSID:
-        print("Make sure that your smartphone is connected to \033[1;94m{}\033[0m".format(SSID))
+        global mini_download_ssid
+        #mini_message = "Make sure that your smartphone is connected to \033[1;94m{}\033[0m".format(SSID)
+        mini_download_ssid = SSID
 
     # There are many times where I just need to visit the url
     # and cant bother scaning the QR code everytime when debugging
     if debug:
-        print(address)
-        #time.sleep(1 * 5 * 60)
-        #return(address)
-        global mini_url
-        mini_url = address
-        #print(mini_url)
-
+        #print(address)
+        global mini_download_url
+        mini_download_url = address
+        #print(mini_download_url)
     #print_qr_code(address)
 
     try:
@@ -438,7 +476,7 @@ def start_download_server(file_path, debug, custom_port, ip_addr):
     clean_exit()
 
 
-def start_upload_server(file_path, debug, custom_port, ip_addr, auth):
+def start_upload_server(file_path, debug, custom_port, ip_addr):
     """
     Keyword Arguments:
     file_path        -- String indicating the path of the file to be uploaded
@@ -448,7 +486,7 @@ def start_upload_server(file_path, debug, custom_port, ip_addr, auth):
     auth             -- String indicating base64 encoded username:password
     """
 
-    if custom_port:
+    '''if custom_port:
         PORT = int(custom_port)
     else:
         PORT = random_port()
@@ -458,6 +496,9 @@ def start_upload_server(file_path, debug, custom_port, ip_addr, auth):
     else:
         LOCAL_IP = get_local_ip()
 
+    SSID = get_ssid()'''
+    PORT = random_port()
+    LOCAL_IP =  get_local_ip()
     SSID = get_ssid()
 
     if not os.path.exists(file_path):
@@ -468,7 +509,7 @@ def start_upload_server(file_path, debug, custom_port, ip_addr, auth):
         print("%s is not a folder." % file_path)
         clean_exit()
 
-    handler = FileUploadServerHandlerClass(file_path, auth, debug)
+    handler = FileUploadServerHandlerClass(file_path, debug)
 
     try:
         httpd = socketserver.TCPServer(("", PORT), handler)
@@ -481,14 +522,18 @@ def start_upload_server(file_path, debug, custom_port, ip_addr, auth):
 
     print("Scan the following QR code to start uploading.")
     if SSID:
-        print("Make sure that your smartphone is connected to \033[1;94m{}\033[0m".format(SSID))
+        global mini_upload_ssid
+        mini_upload_ssid = SSID
+        #print("Make sure that your smartphone is connected to \033[1;94m{}\033[0m".format(SSID))
 
     # There are many times where I just need to visit the url
     # and cant bother scaning the QR code everytime when debugging
-    if debug:
-        print(address)
+    '''if debug:
+        print(address)'''
+    global mini_upload_url
+    mini_upload_url = address
 
-    print_qr_code(address)
+    #print_qr_code(address)
 
     try:
         httpd.serve_forever()
@@ -520,6 +565,11 @@ def main():
     parser.add_argument('--port', '-p', dest="port", help="use a custom port")
     parser.add_argument('--ip_addr', dest="ip_addr", choices=get_local_ips_available(), help="specify IP address")
     parser.add_argument('--auth', action="store", help="add authentication, format: username:password", type=b64_auth)
+    parser.add_argument(
+        "--no-force-download",
+        action="store_true",
+        help="Allow browser to handle the file processing instead of forcing it to download."
+    )
 
     args = parser.parse_args()
 
@@ -533,9 +583,17 @@ def main():
     cursor(False)
 
     if args.receive:
-        start_upload_server(file_path=args.file_path, debug=args.debug, custom_port=args.port, ip_addr=args.ip_addr, auth=args.auth)
+        start_upload_server(file_path=args.file_path, debug=args.debug, custom_port=args.port, ip_addr=args.ip_addr)
     else:
-        start_download_server(file_path=args.file_path, debug=args.debug, custom_port=args.port, ip_addr=args.ip_addr, auth=args.auth)
+        start_download_server(
+            args.file_path,
+            debug=args.debug,
+            custom_port=args.port,
+            ip_addr=args.ip_addr,
+            #auth=args.auth,
+            no_force_download=args.no_force_download
+        )
+
 
 if __name__ == "__main__":
     main()
