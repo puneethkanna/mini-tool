@@ -1,0 +1,148 @@
+import sys
+import sqlite3
+import random
+conn=sqlite3.connect('man.db')
+try:
+	cur=conn.cursor()
+	cur.execute('create table mana(name text,password text)')
+except:
+	pass
+def pwdgenerator():
+	name=input('Enter your name:')
+	mail=input('Enter your mailid:')
+	symbol=['@', '#', '$', '%', '=', ':', '?', '.', '/', '|', '~', '>',  
+	           '*', '(', ')'] 		   
+	n=[]
+	n[:]=name
+	m=[]
+	m[:]=mail
+	final=n+m+symbol
+	password=[]
+	z=''
+	t1 = len(n)
+	t2 = len(m)
+	t1 = t1 - 3
+	t2 = t2 - 3
+	for i in range(5):
+		z = ''
+		ttt1 = random.randrange(0,t1)
+		for tt1 in range(ttt1, ttt1+3):
+			z = z + str(n[tt1])
+		ttt2 = random.randrange(0,t2)
+		for tt2 in range(ttt2, ttt2+3):
+			z = z + str(m[tt2])
+		for j in range(3):
+			z+= str(random.choice(symbol))
+		password.append(z)
+		print(z)
+	#print(password)
+		#print(z)
+	#for i in password:
+	#	print(i)
+#password = pwd_generator()
+#print(password)
+def pwd_manager_display():
+	global conn,cur
+	c=cur.execute('select * from mana')
+	x=c.fetchall()
+	if len(x)!=0:
+		for i in range(len(x)):
+			print(x[i][0],end=" ")
+		print()
+		n=input('Enter the folder for which you want to see the password: ')
+		for i in range(len(x)):
+			if x[i][0]==n:
+				print(x[i][1])
+	else:
+		print("Empty")
+def pwd_manager_insert(name,password):
+	global conn,cur
+	with conn:
+		if name!=' ':
+			cur.execute("insert into mana values('{}','{}')".format(name,password))
+			print('Succesfully inserted')
+def pwd_manager_update(name,password):
+	global conn,cur
+	with conn:
+		if name!=' ':
+			cur.execute("update mana set password=:pwd where name=:name",{'pwd':password,'name':name})
+		print('Succesfully updated')
+def display():
+	global conn,cur
+	c=cur.execute('select name from mana')
+	x=c.fetchall()
+	d=[]
+	for i in range(len(x)):
+		d.append(x[i][0])
+	return d
+def pwd_manager_delete(name):
+	global conn,cur
+	with conn:
+		cur.execute('delete from mana where name=:name',{'name':name})
+		print('Succesfully deleted')
+def pwdmanager():
+	global conn,cur
+	n=input("view  or insert or update or delete:")
+	if n.lower()=='view':
+		pwd_manager_display()
+	elif n.lower()=='insert':
+		name=input('Enter Name Of Website: ').strip()
+		x=display()
+		if name in x:
+			print("Website already Present")
+			y=input('want to update? y/n')
+			if y=='y':
+				pwd=input('Enter new password:')
+				pwd_manager_update(name,pwd)
+			else:
+				pass
+		else:
+			pwd=input('Enter Password: ')
+			pwd_manager_insert(name,pwd)
+	elif n.lower()=='update':
+		print('Existing websites:')
+		x=display()
+		if len(x)!=0:
+			print(*x)
+			name=input('Enter the Name of the website for which  want to update:').strip()
+			pwd=input('Enter the new password:')
+			#folder=Pwdmanager(name,pwd)
+			pwd_manager_update(name,pwd)
+		else:
+			print('No websites to update')
+	elif n.lower()=='delete':
+		print('Existing website:')
+		x=display()
+		if len(x)!=0:
+			print(*x)
+			name=input('Enter the name of the website to delete:').strip()
+			#folder=Pwdmanager(name,'')
+			pwd_manager_delete(name)
+		else:
+			print('No websites to delete')	
+if __name__=='__main__':
+    try:
+        choice=sys.argv[1]
+    except:
+        choice=""
+    if choice.lower()=='passwordmanager':
+        pwdmanager()
+    elif choice.lower()=='passwordgenerator':
+        pwdgenerator()
+    elif choice.lower()=="":
+        #print("Enter ur choice:")
+        while(1):
+            print("1.Password Manager")
+            print("2.Password Generator")
+            print("3.Exit")
+            n=int(input('Enter ur choice:'))
+            if n==1:
+                pwdmanager()
+            elif n==2:
+                pwdgenerator()
+            elif n==3:
+                quit()
+            else:
+                print("Choice Correct Option")
+    else:
+    	print('No Tool Exist')
