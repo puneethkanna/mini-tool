@@ -189,6 +189,7 @@ class PasswordManager(QDialog):
 
 		self.AddUpdateBox = QGroupBox("Add Password")
 		self.DeletePasswordBox = QGroupBox("Delete Password")
+		self.ViewPasswordBox = QGroupBox("View Password")
 		self.listWidget = QListWidget()
 		self.listWidget.setSelectionBehavior(QAbstractItemView.SelectItems)
 
@@ -198,6 +199,7 @@ class PasswordManager(QDialog):
 		self.add_update_username = QLineEdit()
 		self.add_update_password = QLineEdit()
 		self.delete_username = QLineEdit()
+		self.view_password = QLineEdit()
 		self.AddUpdateForm()
                 
 		self.window_layout = QVBoxLayout(widget)
@@ -216,6 +218,12 @@ class PasswordManager(QDialog):
         
 		self.DeleteForm()
 
+		self.view_password_btn = QPushButton(self)
+		self.view_password_btn.setStyleSheet('background-color: rgb(0,0,255); color: #fff')
+		self.view_password_btn.setText('View')
+		self.view_password_btn.clicked.connect(self.view)
+		self.ViewForm()
+
 		self.pushButton = QPushButton(self)
 		self.pushButton.setStyleSheet('background-color: rgb(0,0,255); color: #fff')
 		self.pushButton.setText('Home')
@@ -225,6 +233,8 @@ class PasswordManager(QDialog):
 		dlgLayout.addWidget(self.add_update_btn)
 		dlgLayout.addWidget(self.DeletePasswordBox)
 		dlgLayout.addWidget(self.delete_btn)
+		dlgLayout.addWidget(self.ViewPasswordBox)
+		dlgLayout.addWidget(self.view_password_btn)
 		dlgLayout.addLayout(self.formLayout)
 		dlgLayout.addLayout(self.window_layout)    
 
@@ -241,11 +251,15 @@ class PasswordManager(QDialog):
 		layout = QFormLayout() 
 		layout.addRow(QLabel("Username"), self.delete_username)
 		self.DeletePasswordBox.setLayout(layout)
+	def ViewForm(self):
+		layout = QFormLayout() 
+		layout.addRow(QLabel("Username"), self.view_password)
+		self.ViewPasswordBox.setLayout(layout)
 
 
 	@pyqtSlot()
 	def add_update(self):
-		temp = (mg.pwd_manager_insert(self.add_update_username.text(),self.add_update_username.text()))
+		temp = (mg.pwd_manager_insert(self.add_update_username.text(),self.add_update_password.text()))
 		if(temp == True):
 			QMessageBox.about(self, "Info", "New password added sucessfully!")
 		elif(temp == "exist"):
@@ -263,6 +277,14 @@ class PasswordManager(QDialog):
 		if(temp == True):
 			QMessageBox.about(self, "Info", "Password deleted sucessfully!")
 		elif(temp == False):
+			QMessageBox.critical(self, "Warning", "No username found!!")
+
+	@pyqtSlot()
+	def view(self):
+		temp = (mg.pwd_manager_display(self.view_password.text()))
+		if(temp):
+			QMessageBox.about(self, temp[0][0], temp[0][1])
+		else:
 			QMessageBox.critical(self, "Warning", "No username found!!")
 		
 	
