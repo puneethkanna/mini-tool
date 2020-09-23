@@ -14,13 +14,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(587, 532)
-        MainWindow.setStyleSheet("background-color: rgb(0, 0, 0);\n"
-"background-color: rgb(46, 52, 54);\n"
-"background-color: rgb(0, 0, 0);\n"
-"background-color: rgb(0, 0, 0);\n"
-"background-color: rgb(0, 0, 0);\n"
-"background-color: rgb(255, 255, 255);\n"
-"background-color: rgb(0 ,0 ,0);")
+        MainWindow.setStyleSheet("background-color: rgb(0 ,0 ,0);")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label1 = QtWidgets.QLabel(self.centralwidget)
@@ -38,11 +32,7 @@ class Ui_MainWindow(object):
         self.l1.setObjectName("l1")
         self.t1 = QtWidgets.QLineEdit(self.centralwidget)
         self.t1.setGeometry(QtCore.QRect(110, 40, 271, 20))
-        self.t1.setStyleSheet("border-color: rgb(255, 255, 255);\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-color: rgb(255, 255, 255);\n"
-"border-color: rgb(255, 255, 255);\n"
-"gridline-color: rgb(255, 255, 255);")
+        self.t1.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.t1.setText("")
         self.t1.setObjectName("t1")
         self.l2 = QtWidgets.QLabel(self.centralwidget)
@@ -78,11 +68,7 @@ class Ui_MainWindow(object):
         self.label2.setObjectName("label2")
         self.b2 = QtWidgets.QPushButton(self.centralwidget)
         self.b2.setGeometry(QtCore.QRect(80, 210, 89, 25))
-        self.b2.setStyleSheet("background-color: rgb(206, 92, 0);\n"
-"background-color: rgb(245, 121, 0);\n"
-"background-color: rgb(245, 121, 0);\n"
-"background-color: rgb(196, 160, 0);\n"
-"background-color: rgb(245, 121, 0);")
+        self.b2.setStyleSheet("background-color: rgb(245, 121, 0);")
         self.b2.setObjectName("b2")
         self.b2.clicked.connect(lambda : viewfolder())
         self.label3 = QtWidgets.QLabel(self.centralwidget)
@@ -118,9 +104,7 @@ class Ui_MainWindow(object):
         self.label4.setObjectName("label4")
         self.l5 = QtWidgets.QLabel(self.centralwidget)
         self.l5.setGeometry(QtCore.QRect(20, 410, 81, 17))
-        self.l5.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"background-color: rgb(0, 0, 0);\n"
-"color: rgb(255, 255, 255);")
+        self.l5.setStyleSheet("color: rgb(255, 255, 255);")
         self.l5.setObjectName("l5")
         self.t5 = QtWidgets.QLineEdit(self.centralwidget)
         self.t5.setGeometry(QtCore.QRect(110, 410, 271, 21))
