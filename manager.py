@@ -53,8 +53,7 @@ class Ui_MainWindow(object):
         self.t3.setObjectName("t3")
         self.b1 = QtWidgets.QPushButton(self.centralwidget)
         self.b1.setGeometry(QtCore.QRect(80, 140, 89, 25))
-        self.b1.setStyleSheet("background-color: rgb(245, 121, 0);\n"
-"background-color: rgb(196, 160, 0);")
+        self.b1.setStyleSheet("background-color: rgb(245, 121, 0);")
         self.b1.setObjectName("b1")
         self.b1.clicked.connect(lambda : insert(self.t1.text(),self.t2.text(),self.t3.text()))
         self.label2 = QtWidgets.QLabel(self.centralwidget)
